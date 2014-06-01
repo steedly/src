@@ -231,8 +231,6 @@ endif
 endif
 endif
 
-TARGET := blink
-
 # auto mode?
 INOFILE := $(wildcard *.ino *.pde)
 ifdef INOFILE
