@@ -1,6 +1,8 @@
 #include "Arduino.h"
 #include "max7219.h"
 
+#define MAX_PATH 132
+
 int main(void)
 {
 	init();
@@ -8,8 +10,11 @@ int main(void)
 #if defined(USBCON)
 	USBDevice.attach();
 #endif
+	Serial.begin(9600);
 	
-	const char string[] = "3 2 1...Blastoff!!!  ";
+	char string[MAX_PATH] = "3 2 1...Blastoff!!!  ";
+	char buffer[MAX_PATH];
+	int iBufferIdx = 0;
 	max7219 displayDriver;
 
 	for(;;)
@@ -24,11 +29,29 @@ int main(void)
 			for( int j=0; j<9; j++ )
 			{
 				displayDriver.Display8x8Font(c1,c2,j);
-				delay(50); // display for 50ms
+				delay(30); // display for 50ms
 			}
 
 			c1 = c2;
 			c2 = string[++i];
+			if( Serial.available() > 0)
+			{
+				char ch = Serial.read();
+				Serial.print(ch);
+				buffer[iBufferIdx++] = ch;
+				if(iBufferIdx >= MAX_PATH-2 || ch == 13)
+				{
+					Serial.println("");
+					// make null terminated string
+					buffer[iBufferIdx++] = '\0';
+					// Copy back into string
+					memcpy(string, buffer, iBufferIdx);
+					Serial.println(string);
+					// Reset buffer length
+					iBufferIdx = 0;
+					break;
+				}
+			}
 		}
 	}
     
